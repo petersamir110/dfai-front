@@ -17,7 +17,7 @@ export default function Uploadbox() {
       <div>
         <div>
           <Label htmlFor="file-upload-2" className="font-medium">
-            Upload ICOs
+            Upload IOCs
           </Label>
           <div
             {...getRootProps()}
