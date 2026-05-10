@@ -1,41 +1,34 @@
 "use client";
-import Image from "next/image";
 import { GrProjects } from "react-icons/gr";
 import { GrSearchAdvanced } from "react-icons/gr";
 import { useState } from "react";
 import { GrDocument } from "react-icons/gr";
 import Link from "next/link";
 import { projectList, formatSlug } from "@/lib/projects";
+import { usePathname } from "next/navigation";
 
 export default function SideBar() {
   const [isProjectListOpen, setIsProjectListOpen] = useState(false);
-  const projectList = [
-    { name: "Project-1", id: 1 },
-    { name: "Project-2", id: 2 },
-    { name: "Project-3", id: 3 },
-    { name: "Project-4", id: 4 },
-  ];
-  const formatSlug = (val) =>
-    val
-      .toString()
-      .replace(/ /g, "-") // Replace spaces with -
-      .replace(/[^\w-]+/g, "") // Remove all non-word chars
-      .toLowerCase(); // Convert to lowercase
-
+  const pathName = usePathname();
   return (
     <nav className="sticky top-0 left-0 h-screen z-50 flex flex-row justify-between items-start ">
       {/* Sidebar content */}
       <div className="pt-4 p-2 h-full w-16 flex flex-col gap-6 bg-[#2a2a2a] border-[#303439] border-r-2 ">
         {/* SideBar Icons */}
         <div className="pl-2 flex flex-col gap-4">
-          <GrSearchAdvanced size={26} />
+          <Link href={"/"}>
+            <GrSearchAdvanced
+              size={20}
+              className={pathName === "/" || "" ? "text-blue-400" : ""}
+            />
+          </Link>
           <button
             onClick={() => setIsProjectListOpen(!isProjectListOpen)}
             className={`transition-colors  ${
               isProjectListOpen ? "text-blue-400" : ""
             }`}
           >
-            <GrProjects size={26} />
+            <GrProjects size={20} />
           </button>
         </div>
       </div>
