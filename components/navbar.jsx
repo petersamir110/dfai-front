@@ -1,6 +1,9 @@
-import Image from "next/image";
+"use client";
 
-export default function ProjectName() {
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+export default function NavBar() {
+  let pathName = usePathname();
   return (
     <div className="sticky top-0 z-10 p-2 border-b-2 bg-[#2a2a2a] border-[#303439]  flex items-center justify-center w-full">
       {/* Logo */}
@@ -16,7 +19,9 @@ export default function ProjectName() {
 
       {/* ProjectName #Work in Progress */}
       <div className="p-2 bg-[#1b1b1c] rounded-lg w-96 flex items-center border-2 border-[#303439]">
-        <h1 className="pl-3 text-sm text-gray-200">Project Name</h1>
+        <h1 className="pl-3 text-sm text-gray-200">
+          {pathName === "/" ? "New Project" : pathName.slice(10)}
+        </h1>
       </div>
     </div>
   );
