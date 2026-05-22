@@ -9,7 +9,7 @@ export default function ChatBot() {
     <div className="">
       {chatBotIsOpend === false && (
         <button
-          className="fixed bottom-6 right-6 z-50"
+          className="fixed bottom-6 right-6 z-50 hover:text-blue-400 transition-colors cursor-pointer"
           onClick={() => {
             setChatBotIsOpen(!chatBotIsOpend);
           }}
@@ -18,7 +18,7 @@ export default function ChatBot() {
         </button>
       )}
       {chatBotIsOpend === true && (
-        <div className="h-full w-96 ">
+        <div className="h-full w-96  ">
           <Chat
             chatBotIsOpend={chatBotIsOpend}
             setChatBotIsOpen={setChatBotIsOpen}

@@ -27,8 +27,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const API_KEY = "YOUR_GEMINI_API_KEY";
-const MODEL = "gemini-2.0-flash";
+const API_KEY = process.env.NEXT_PUBLIC_CHAT_API_KEY;
+const MODEL = "gemini-2.5-flash";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const DEFAULT_AGENT = {
@@ -160,9 +160,9 @@ export function ChatComp({ setChatBotIsOpen }) {
   const canSend = textInput.trim() && !isLoading;
 
   return (
-    <Card className="mx-auto flex h-full w-full flex-col gap-0 overflow-hidden">
-      <CardHeader className="flex shrink-0 flex-row items-center justify-between pb-4">
-        <div className="flex items-center gap-4">
+    <Card className="mx-auto flex h-full w-full flex-col gap-0 overflow-hidden rounded-none">
+      <CardHeader className="flex shrink-0 flex-row items-center justify-between pb-4 rounded-none">
+        <div className="flex items-center gap-4 rounded-none">
           <div className="ring-border relative flex size-10 items-center justify-center overflow-hidden rounded-full ring-1 bg-indigo-50 dark:bg-indigo-950">
             <SparklesIcon className="size-5 text-indigo-500" />
           </div>
@@ -184,6 +184,7 @@ export function ChatComp({ setChatBotIsOpen }) {
           </div>
         </div>
         <button
+          className="cursor-pointer"
           onClick={() => {
             setChatBotIsOpen(false);
           }}

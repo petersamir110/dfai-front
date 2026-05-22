@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
     >
       <body className="bg-[#1e1e1e]">
         <NavBar />
-        <div className="flex h-[calc(100vh-57px)] bg-[#1e1e1e] overflow-hidden">
+        <div className="flex h-[calc(100vh-58px)] bg-[#1e1e1e] overflow-hidden">
           <SideBar />
           <main className="flex-1 h-full overflow-y-auto">{children}</main>
           <ChatBot />
