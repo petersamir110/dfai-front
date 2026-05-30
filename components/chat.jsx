@@ -83,11 +83,11 @@ const ChatAction = ({
   return button;
 };
 
-export default function Chat({ setChatBotIsOpen }) {
-  return <ChatComp setChatBotIsOpen={setChatBotIsOpen} />;
+export default function Chat() {
+  return <ChatComp />;
 }
 
-export function ChatComp({ setChatBotIsOpen }) {
+export function ChatComp() {
   const [messages, setMessages] = useState([]);
   const [textInput, setTextInput] = useState("");
   const [copiedIndex, setCopiedIndex] = useState(null);
@@ -183,14 +183,6 @@ export function ChatComp({ setChatBotIsOpen }) {
             </div>
           </div>
         </div>
-        <button
-          className="cursor-pointer"
-          onClick={() => {
-            setChatBotIsOpen(false);
-          }}
-        >
-          <span>―</span>
-        </button>
       </CardHeader>
 
       <CardContent className="flex-1 overflow-hidden p-0">

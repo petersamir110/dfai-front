@@ -20,7 +20,7 @@ export default function NavBar() {
       {/* ProjectName #Work in Progress */}
       <div className="p-2 bg-[#1b1b1c] rounded-lg w-96 flex items-center border-2 border-[#303439]">
         <h1 className="pl-3 text-sm text-gray-200">
-          {pathName === "/" ? "New Project" : pathName.slice(10)}
+          {pathName === "/" ? "New Project" : pathName.slice(1)}
         </h1>
       </div>
     </div>
