@@ -3,15 +3,17 @@ import { useState } from "react";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ExtensionSelector } from "@/components/extensionSelector";
 
 export default function ForensicsForm() {
   const [projectName, setProjectName] = useState("");
   const [path, setPath] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Spelled correctly: single 'm'
+  /* Api Testing */
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Forces the browser to stop the default GET behavior
+    e.preventDefault();
     setLoading(true);
 
     const baseUrl =
@@ -29,7 +31,7 @@ export default function ForensicsForm() {
 
     try {
       const response = await fetch(fullUrl, {
-        method: "POST", // Apidog expects POST
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -53,7 +55,6 @@ export default function ForensicsForm() {
 
   return (
     <div>
-      {/* Handled with standard spelling */}
       <form className="w-120 flex flex-col gap-8" onSubmit={handleSubmit}>
         <Field>
           <Input
@@ -66,13 +67,7 @@ export default function ForensicsForm() {
           />
         </Field>
         <Field className="flex flex-row justify-center items-center gap-2">
-          <Input
-            id="input-field-mem"
-            type="text"
-            placeholder=".mem"
-            className="w-20"
-            disabled
-          />
+          <ExtensionSelector />
           <Input
             id="input-field-dumpPath"
             type="text"
