@@ -4,6 +4,8 @@ import { GrSearchAdvanced } from "react-icons/gr";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TbReportAnalytics } from "react-icons/tb";
+import { BsRobot } from "react-icons/bs";
+
 
 export default function SideBar() {
   const pathName = usePathname();
@@ -26,7 +28,7 @@ export default function SideBar() {
             />
           </Link>
           <Link href={"/bot"}>
-            <FaRobot
+            <BsRobot
               size={32}
               className={pathName === "/bot" || "" ? "text-blue-400" : ""}
             />

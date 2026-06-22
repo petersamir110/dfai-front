@@ -30,15 +30,15 @@ export default function NavBar() {
         <Image
           src="/images/Digilians.png"
           alt="Digilians Logo"
-          height={40}
-          width={40}
+          height={50}
+          width={50}
           className="object-contain"
         />
         <Image
           src="/images/Egyma.png"
           alt="Egyma Logo"
-          height={40}
-          width={40}
+          height={50}
+          width={50}
           className="object-contain"
         />
       </div>
