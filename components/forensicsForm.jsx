@@ -10,156 +10,179 @@ export default function ForensicsForm() {
   const [path, setPath] = useState("");
   const [extension, setExtension] = useState(".mem"); 
   const [loading, setLoading] = useState(false);
-  
-  // --- 🔘 مخازن الداتا الخاصة بالتحميل لايف ---
-  const [percent, setPercent] = useState(0); // الرقم المئوي الفعلي (لتحريك الشريط)
-  const [statusText, setStatusText] = useState("Waiting to start..."); // كلمة الحالة
+  const [percent, setPercent] = useState(0); 
+  const [taskCount, setTaskCount] = useState("0/0"); 
+  const [statusText, setStatusText] = useState("Waiting to start..."); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setPercent(0); // تصغير الشريط لـ 0 عند كل ضغطة Submit
+    setPercent(0); 
+    setTaskCount("0/0"); 
     setStatusText("Initializing Analysis...");
 
-    // 1️⃣ حذف القديم (HTTP GET)
-    try { await fetch("/backend/project/delete", { method: "GET" }); } catch (err) {}
+    try { 
+      await fetch("/backend/project/delete", { method: "GET" }); 
+    } catch (err) {
+      console.log(err);
+    }
 
-    // 2️⃣ إرسال الجديد (HTTP POST) - الداتا بتبعت هنا
     try {
       const response = await fetch("/backend/memory/path", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ project_name: projectName, file_path: `${path}${extension}` }),
+        body: JSON.stringify({ project_name: projectName, file_path: path + extension }),
       });
 
-      if (!response.ok) { setLoading(false); return; }
+      if (!response.ok) { 
+        try {
+          const errorData = await response.json();
+          setStatusText(`Backend Error (400): ${errorData.detail || "Bad Request"} ❌`);
+        } catch (e) {
+          setStatusText(`Backend Error: Server responded with status ${response.status} ❌`);
+        }
+        setLoading(false); 
+        return; 
+      }
       
-      // 3️⃣ فتح الـ WebSocket للمتابعة لايف - المتابعة بتبدأ هنا
-      const wsUrl = "ws://10.2.15.8:8000/ws/progress"; // العنوان المأخوذ من Apidog
-      const socket = new WebSocket(wsUrl);
+      setStatusText("Connecting to live progress... 🔌");
 
-      // أول ما الخط يفتح بنجاح
+      const socket = new WebSocket("ws://10.2.15.8:8000/ws/progress");
+
       socket.onopen = () => {
-        console.log("🔌 خط الـ WebSocket فتح وجاري الاستماع للتحديثات...");
+        setStatusText("Analysis Started... 🚀");
       };
 
-      // أول ما السيرفر يبعت تحديث جديد أو نسبة تحميل (JSON)
       socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           
-          // 💡 السحر هنا: بناخد النسبة المئوية ونحدث بيها المخزن الفعلي
-          if (data.percentage !== undefined) setPercent(data.percentage);
+          if (data.percentage !== undefined) {
+            setPercent(Math.round(Number(data.percentage))); 
+          }
           
-          // تحديث رسالة الحالة المعروضة
-          setStatusText(`Analyzing... ${data.percentage}% Complete`);
+          if (data.finished_tasks !== undefined && data.all_tasks !== undefined) {
+            setTaskCount(`${data.finished_tasks}/${data.all_tasks}`);
+          }
+          
+          setStatusText(`Analyzing Memory Dump... ${data.percentage}%`);
 
-          // أول ما يوصل 100% نقفل الخط
-          if (data.percentage === 100) socket.close();
+          if (data.percentage === 100) {
+            socket.close();
+          }
         } catch (err) {
-          // لو الرد مش JSON بنعرضه ككلمة حالة
           setStatusText(event.data);
         }
       };
 
-      // أول ما الخط يقفل (سواء التحليل خلص أو حصلت قفلة)
       socket.onclose = () => {
         setLoading(false);
-        if(percent === 100) setStatusText("Analysis Complete! 🎉");
+        if (percent < 100) {
+          setStatusText("Analysis paused or server closed connection. ⚠️");
+        } else {
+          setStatusText("Analysis Completed! 🎉");
+        }
+      };
+
+      socket.onerror = () => {
+        setStatusText("WebSocket Connection Failed! 🔌");
+        setLoading(false);
       };
 
     } catch (error) {
-      console.error("حدث خطأ في العملية:", error);
-      alert(`Error: ${error.message}`);
+      setStatusText("Network Error: Cannot connect to Backend server! 🌐");
       setLoading(false);
     }
   };
 
-  // --- 💡 أيقونة علامة الصح (SVG) ---
   const CheckIcon = () => (
-    <svg className="w-5 h-5 text-green-500 shadow-[0_0_8px_#22c55e]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
     </svg>
   );
 
-  // --- 💡 أيقونة الـ Spinner للتحميل (SVG) ---
   const SpinnerIcon = () => (
-    <div className="w-5 h-5 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+    <div className="w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full animate-spin"></div>
   );
 
   return (
     <div className="flex flex-col items-center">
-      <form className="w-120 flex flex-col gap-8" onSubmit={handleSubmit}>
-        {/* خانة اسم المشروع */}
-        <Field>
+      <form className="w-120 flex flex-col gap-6" onSubmit={handleSubmit}>
+        <Field className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-gray-300 self-start">Project Name</span>
           <Input placeholder="Enter The Project Name" value={projectName} onChange={(e) => setProjectName(e.target.value)} required />
         </Field>
         
-        {/* خانة المسار والـ Selector */}
-        <Field className="flex flex-row gap-2 items-center">
-          <ExtensionSelector value={extension} onChange={(val) => setExtension(val)} />
-          <Input placeholder="Enter Dump File Path" value={path} onChange={(e) => setPath(e.target.value)} required />
+        <Field className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-gray-300 self-start">Dump File Path</span>
+          <div className="flex flex-row gap-2 items-center w-full">
+            <ExtensionSelector value={extension} onChange={(val) => setExtension(val)} />
+            <Input placeholder="Enter Dump File Path" value={path} onChange={(e) => setPath(e.target.value)} required />
+          </div>
         </Field>
         
-        {/* زرار الـ Submit */}
-        <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white font-bold h-12 rounded-lg transition-colors">
+        <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white font-bold h-12 rounded-lg mt-2">
           {loading ? "Analyzing..." : "Submit"}
         </Button>
 
-        {/* ----------------------------------------------------------- */}
-        {/* 📊 شريط الخطوات (Stepper) الديناميكي الحقيقي الجديد */}
-        {/* ----------------------------------------------------------- */}
-        <div className="w-full mt-10 px-8 relative">
-          
-          {/* خلفية الشريط (الخط الرمادي) اللي بيملا Interval (1->2) */}
-          <div className="absolute top-1/2 left-0 w-full h-[3px] bg-gray-700 -translate-y-1/2 rounded-full z-0 px-8"></div>
+        <div className="w-full mt-6 relative">
+          <div className="absolute top-4 left-[48px] right-[48px] h-[2px] z-0">
+            <div className="w-full h-full bg-gray-800"></div>
+            <div 
+              className="absolute top-0 left-0 h-full bg-green-500 transition-all duration-300 ease-out shadow-[0_0_8px_#22c55e]" 
+              style={{ width: `${percent}%` }}
+            ></div>
+          </div>
 
-          {/* 💡 السحر الفعلي: الخط الأخضر المتحرك (1->2) اللي بيملى بناءً على percent% */}
-          <div
-            className="absolute top-1/2 left-0 h-[3px] bg-green-500 -translate-y-1/2 rounded-full z-10 transition-all duration-300 ease-out shadow-[0_0_10px_#22c55e] ml-8"
-            style={{ width: `calc(${percent}% - 32px)` }} // Filling interval 1-2
-          ></div>
-
-          {/* الخط الأخضر المتحرك (2->3) - بيملى بس أول ما الـ 2 توصل 100% */}
-          {percent === 100 && (
-             <div className="absolute top-1/2 left-[calc(100%-32px)] w-8 h-[3px] bg-green-500 -translate-y-1/2 rounded-full z-10 shadow-[0_0_10px_#22c55e]"></div>
-          )}
-
-          {/* صف الخطوات (Nodes) */}
-          <div className="w-full flex items-center justify-between relative gap-0">
-
-            {/* 1️⃣ الخطوة الأولى: Input (ثابتة لأنها بتخلص أول ما تدوس) */}
-            <div className="relative z-20 flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900 border-2 border-green-500 text-green-500 shadow-[0_0_10px_#22c55e]">
+          <div className="w-full flex items-center justify-between relative z-20">
+            <div className="flex flex-col items-center w-24">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900 border border-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]">
                  <CheckIcon />
               </div>
-              <span className="absolute top-full mt-2 text-[11px] text-gray-400">Input</span>
+              <span className="mt-2 text-[12px] text-gray-400 font-medium whitespace-nowrap">Read</span>
             </div>
 
-            {/* 2️⃣ الخطوة الثانية: Analyzing (داينمك بناءً على النسبة) */}
-            <div className="relative z-20 flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ease-out ${percent === 100 ? 'bg-green-500 border-green-500 text-white shadow-[0_0_15px_#22c55e]' : 'bg-gray-900 border-2 border-green-400 text-green-400'}`}>
-                {/*Inside: Spinner while analyzing, Checkmark when done */}
-                {percent < 100 ? <SpinnerIcon /> : <CheckIcon /> }
+            <div className="flex flex-col items-center w-24">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 ${percent === 100 ? 'bg-gray-900 border-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-gray-900 border-gray-600'}`}>
+                {percent === 0 ? (
+                  <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+                ) : percent < 100 ? (
+                  <SpinnerIcon />
+                ) : (
+                  <CheckIcon />
+                )}
               </div>
-              <span className={`absolute top-full mt-2 text-[11px] font-semibold ${percent < 100 ? 'text-white' : 'text-gray-400'}`}>Analyzing</span>
+              <span className={`mt-2 text-[12px] font-semibold whitespace-nowrap ${percent > 0 && percent < 100 ? 'text-green-400 animate-pulse' : 'text-gray-400'}`}>
+                Extracted
+              </span>
             </div>
 
-            {/* 3️⃣ الخطوة الثالثة: Done (بتستنى الـ Analyze يخلص) */}
-            <div className="relative z-20 flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-colors duration-300 ${percent === 100 ? 'border-green-500 bg-gray-900 text-green-500 shadow-[0_0_10px_#22c55e]' : 'border-gray-600 bg-gray-900 text-gray-600'}`}>
-                 <span className="font-mono text-sm font-bold">✓</span>
+            <div className="flex flex-col items-center w-24">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-900 border transition-all duration-300 ${percent === 100 ? 'border-green-500 text-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 'border-gray-800 text-gray-700'}`}>
+                 <span className="text-xs font-bold">✓</span>
               </div>
-              <span className="absolute top-full mt-2 text-[11px] text-gray-600">Done</span>
+              <span className={`mt-2 text-[12px] font-medium whitespace-nowrap ${percent === 100 ? 'text-gray-400' : 'text-gray-600'}`}>
+                Analyzed
+              </span>
             </div>
-            
           </div>
-          
-           {/* ريسالة الحالة النصية تحت الشريط */}
-          <div className="text-center mt-12 text-[11px] text-gray-400 font-medium">
-             Current Status: <span className="text-green-300 font-mono">{statusText}</span>
-          </div>
+        </div>
 
+        <div className="w-full mt-6 space-y-2">
+          <div className="flex justify-between items-end px-1">
+            <span className="text-red-500 font-bold text-sm tracking-widest uppercase">
+              {statusText}
+            </span>
+            <span className="text-white text-xs font-mono">
+              Tasks: <span className="text-red-400">{taskCount}</span> | {percent}%
+            </span>
+          </div>
+          <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700 shadow-inner relative">
+            <div 
+              className="h-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-all duration-300 ease-out rounded-full"
+              style={{ width: `${percent}%` }}
+            ></div>
+          </div>
         </div>
       </form>
     </div>

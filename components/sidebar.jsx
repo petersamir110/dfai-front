@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TbReportAnalytics } from "react-icons/tb";
 import { BsRobot } from "react-icons/bs";
+import { HiHome } from "react-icons/hi2";
+
 
 
 export default function SideBar() {
@@ -16,7 +18,7 @@ export default function SideBar() {
         {/* SideBar Icons */}
         <div className="pl-2 flex flex-col gap-4">
           <Link href={"/"}>
-            <GrSearchAdvanced
+            <HiHome
               size={32}
               className={pathName === "/" || "" ? "text-blue-400" : ""}
             />
