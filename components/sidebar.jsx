@@ -20,19 +20,19 @@ export default function SideBar() {
           <Link href={"/"}>
             <HiHome
               size={32}
-              className={pathName === "/" || "" ? "text-blue-400" : ""}
+              className={pathName === "/" || "" ? "text-red-600" : ""}
             />
           </Link>
           <Link href={"/report"}>
             <TbReportAnalytics
               size={32}
-              className={pathName === "/report" || "" ? "text-blue-400" : ""}
+              className={pathName === "/report" || "" ? "text-red-600" : ""}
             />
           </Link>
           <Link href={"/bot"}>
             <BsRobot
               size={32}
-              className={pathName === "/bot" || "" ? "text-blue-400" : ""}
+              className={pathName === "/bot" || "" ? "text-red-600" : ""}
             />
           </Link>
         </div>
