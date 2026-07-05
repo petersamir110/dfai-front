@@ -1,15 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useProject } from "@/context/ProjectContext";
 
 export default function NavBar() {
-  let pathName = usePathname();
-  
+  const { projectTitle } = useProject();
   return (
-
     <div className="sticky top-0 z-50 h-14 p-2 border-b-2 bg-[#03060C] border-[#303439]/40 flex items-center justify-between w-full">
-      
       {/* DFAI Logo */}
       <div className="flex items-center">
         <Image
@@ -22,11 +19,9 @@ export default function NavBar() {
       </div>
 
       {/* ProjectName #Work in Progress */}
-      <div className="p-2 bg-[#080d1a] rounded-lg w-96 flex items-center border border-[#303439]/60 h-9">
-        <h1 className="pl-3 text-sm text-gray-300 font-medium layout-title">
-          {pathName === "/"
-            ? "New Project"
-            : pathName.slice(1, 2).toUpperCase() + pathName.slice(2)}
+      <div className="p-2 bg-[#080d1a] rounded-lg w-96 flex items-center justify-center border border-[#303439]/60 h-9">
+        <h1 className="pl-3 text-gray-300 font-medium layout-title capitalize text-2xl">
+          {projectTitle === "" ? "New Project" : projectTitle}
         </h1>
       </div>
 

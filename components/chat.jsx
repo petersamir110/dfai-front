@@ -27,7 +27,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const API_KEY = process.env.NEXT_PUBLIC_CHAT_API_KEY;
+const API_KEY = "AQ.Ab8RN6LC3EbKjmwZh2Y1U0F3Yq1_YZFlvNQu2QwHLq9wfj1NRg";
 const MODEL = "gemini-2.5-flash";
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
@@ -37,42 +37,28 @@ const DEFAULT_AGENT = {
 };
 
 const ChatActions = ({ className, children, ...props }) => (
-  <div className={cn("flex items-center gap-1", className)} {...props}>
+  <div className={cn("flex items-center gap-1 mt-1", className)} {...props}>
     {children}
   </div>
 );
 
-const ChatAction = ({
-  tooltip,
-  children,
-  label,
-  className,
-  variant = "ghost",
-  size = "sm",
-  ...props
-}) => {
-  const button = (
-    <Button
-      className={cn(
-        "text-muted-foreground hover:text-foreground relative size-9 p-1.5",
-        className,
-      )}
-      size={size}
-      type="button"
-      variant={variant}
-      {...props}
-    >
-      {children}
-      <span className="sr-only">{label || tooltip}</span>
-    </Button>
+const ChatAction = ({ tooltip, children, label, className, ...props }) => {
+  const btnClass = cn(
+    "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 relative size-8 p-1.5 border border-blue-600/30 bg-[#070b14] rounded-md inline-flex items-center justify-center transition-colors",
+    className,
   );
 
   if (tooltip) {
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent>
+          <TooltipTrigger asChild={false}>
+            <button className={btnClass} type="button" {...props}>
+              {children}
+              <span className="sr-only">{label || tooltip}</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-[#070b14] border border-blue-600/40 text-slate-200 font-mono text-[11px]">
             <p>{tooltip}</p>
           </TooltipContent>
         </Tooltip>
@@ -80,7 +66,12 @@ const ChatAction = ({
     );
   }
 
-  return button;
+  return (
+    <button className={btnClass} type="button" {...props}>
+      {children}
+      <span className="sr-only">{label || tooltip}</span>
+    </button>
+  );
 };
 
 export default function Chat() {
@@ -126,7 +117,6 @@ export function ChatComp() {
       if (!res.ok) {
         const errDetail = data?.error?.message || "Unknown error";
         setError(`API error: ${errDetail}`);
-        setMessages((prev) => prev.slice(0, -1));
         return;
       }
 
@@ -141,7 +131,6 @@ export function ChatComp() {
       ];
     } catch (e) {
       setError(`Network error: ${e.message}`);
-      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -160,60 +149,72 @@ export function ChatComp() {
   const canSend = textInput.trim() && !isLoading;
 
   return (
-    <Card className="mx-auto flex h-full w-full flex-col gap-0 overflow-hidden rounded-none">
-      <CardHeader className="flex shrink-0 flex-row items-center justify-between pb-4 rounded-none">
+    <Card className="mx-auto flex h-full w-full flex-col gap-0 overflow-hidden rounded-none bg-[#070b14] border border-blue-600/30 shadow-[0_0_15px_rgba(37,99,235,0.03)] text-slate-200">
+      <CardHeader className="flex shrink-0 flex-row items-center justify-between pb-4 rounded-none border-b border-blue-600/20 bg-[#070b14]">
         <div className="flex items-center gap-4 rounded-none">
-          <div className="ring-border relative flex size-10 items-center justify-center overflow-hidden rounded-full ring-1 bg-indigo-50 dark:bg-indigo-950">
-            <SparklesIcon className="size-5 text-indigo-500" />
+          <div className="ring-blue-600/20 relative flex size-10 items-center justify-center overflow-hidden rounded-full ring-1 bg-blue-950/10 shadow-[0_0_10px_rgba(37,99,235,0.05)] border border-blue-600/30">
+            <SparklesIcon className="size-5 text-blue-600" />
           </div>
           <div className="flex flex-col gap-0.5">
-            <p className="text-sm leading-none font-medium">
+            <p className="text-sm leading-none font-medium font-mono uppercase tracking-wider text-slate-200">
               {DEFAULT_AGENT.name}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest">
               {error ? (
-                <p className="text-destructive text-xs">{error}</p>
+                <p className="text-red-500 animate-pulse font-bold">{error}</p>
               ) : isLoading ? (
-                <p className="text-muted-foreground text-xs animate-pulse">
-                  Thinking…
+                <p className="text-blue-600 animate-pulse font-bold">
+                  Analyzing Prompt…
                 </p>
               ) : (
-                <p className="text-xs text-green-600">Ready</p>
+                <p className="font-bold text-blue-600">System Ready</p>
               )}
             </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-hidden p-0">
+      <CardContent className="flex-1 overflow-hidden p-0 bg-[#070b14]">
         <Conversation className="h-full">
-          <ConversationContent className="flex min-w-0 flex-col gap-2 p-6 pb-2">
+          <ConversationContent className="flex min-w-0 flex-col gap-4 p-6 pb-2">
             {messages.length === 0 ? (
               <ConversationEmptyState
-                icon={<SparklesIcon className="size-8 text-muted-foreground" />}
-                title="Start a conversation"
-                description="Type a message to chat with DFAI AI"
+                icon={<SparklesIcon className="size-8 text-slate-600" />}
+                title={
+                  <span className="font-mono text-slate-400 uppercase tracking-widest text-sm">
+                    Start System Log
+                  </span>
+                }
+                description={
+                  <span className="font-mono text-slate-500 text-xs">
+                    Enter commands to trigger AI execution threads.
+                  </span>
+                }
               />
             ) : (
               messages.map((message, index) => (
                 <div key={index} className="flex w-full flex-col gap-1">
-                  <Message from={message.role}>
-                    <MessageContent className="max-w-full min-w-0">
-                      <Response className="w-auto [overflow-wrap:anywhere] whitespace-pre-wrap">
+                  <Message
+                    from={message.role}
+                    className="gap-3 [&_[class*='bg-']]:bg-transparent [&_[class*='bg-']]:shadow-none"
+                  >
+                    <MessageContent className="max-w-full min-w-0 !bg-transparent shadow-none">
+                      <Response className="w-auto [overflow-wrap:anywhere] whitespace-pre-wrap rounded-lg p-3 font-mono text-sm leading-relaxed !bg-transparent border-none !text-slate-200 shadow-none">
                         {message.content}
                       </Response>
                     </MessageContent>
                     {message.role === "assistant" && (
-                      <div className="flex size-6 flex-shrink-0 items-center justify-center self-end overflow-hidden rounded-full bg-indigo-50 dark:bg-indigo-950 ring-1 ring-border">
-                        <SparklesIcon className="size-3.5 text-indigo-500" />
+                      <div className="flex size-6 flex-shrink-0 items-center justify-center self-end overflow-hidden rounded-full">
+                        <SparklesIcon className="size-3 text-blue-600" />
                       </div>
                     )}
                   </Message>
                   {message.role === "assistant" && (
-                    <ChatActions>
+                    <ChatActions className="justify-start pl-0">
                       <ChatAction
-                        size="sm"
-                        tooltip={copiedIndex === index ? "Copied!" : "Copy"}
+                        tooltip={
+                          copiedIndex === index ? "Copied!" : "Copy Payload"
+                        }
                         onClick={() => {
                           navigator.clipboard.writeText(message.content);
                           setCopiedIndex(index);
@@ -221,9 +222,9 @@ export function ChatComp() {
                         }}
                       >
                         {copiedIndex === index ? (
-                          <CheckIcon className="size-4" />
+                          <CheckIcon className="size-3.5 text-blue-600" />
                         ) : (
-                          <CopyIcon className="size-4" />
+                          <CopyIcon className="size-3.5 text-slate-400" />
                         )}
                       </ChatAction>
                     </ChatActions>
@@ -233,38 +234,41 @@ export function ChatComp() {
             )}
             {isLoading && (
               <div className="flex w-full flex-col gap-1">
-                <Message from="assistant">
-                  <MessageContent className="max-w-full min-w-0">
-                    <Response className="text-muted-foreground italic animate-pulse">
-                      Thinking…
+                <Message from="assistant" className="gap-3">
+                  <MessageContent className="max-w-full min-w-0 !bg-transparent shadow-none">
+                    <Response className="font-mono text-xs italic animate-pulse rounded-lg p-3 !bg-transparent border-none !text-slate-400 shadow-none">
+                      Fetching stream from execution core...
                     </Response>
                   </MessageContent>
                 </Message>
               </div>
             )}
           </ConversationContent>
-          <ConversationScrollButton />
+          <ConversationScrollButton className="bg-[#070b14] text-slate-400 hover:text-slate-200" />
         </Conversation>
       </CardContent>
 
-      <CardFooter className="shrink-0 border-t pt-3">
-        <div className="flex w-full items-center gap-2">
+      <CardFooter className="shrink-0 border-t border-blue-600/20 bg-[#070b14] pt-3 pb-4">
+        <div className="flex w-full items-center gap-2 max-w-4xl mx-auto">
           <Input
             value={textInput}
             onChange={handleTextInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="h-9 focus-visible:ring-0 focus-visible:ring-offset-0"
+            placeholder="Type your system query..."
+            className="h-11 bg-[#070b14] border border-blue-600/40 text-blue-600 focus-visible:border-blue-600 focus-visible:ring-1 focus-visible:ring-blue-600/30 placeholder-slate-600 font-mono text-sm focus-visible:ring-offset-0"
             disabled={isLoading}
           />
           <Button
             onClick={sendMessage}
             size="icon"
-            variant="ghost"
-            className="rounded-full"
             disabled={!canSend}
+            className="border border-blue-600/40 bg-blue-950/10 text-blue-500 hover:bg-blue-600 hover:text-white rounded-lg size-11 flex-shrink-0 transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.08)] uppercase tracking-widest text-sm"
           >
-            <SendIcon className="size-4" />
+            {isLoading ? (
+              <span className="text-xs animate-pulse font-mono">...</span>
+            ) : (
+              <SendIcon className="size-4" />
+            )}
             <span className="sr-only">Send message</span>
           </Button>
         </div>
