@@ -27,12 +27,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const API_KEY = "AQ.Ab8RN6LC3EbKjmwZh2Y1U0F3Yq1_YZFlvNQu2QwHLq9wfj1NRg";
-const MODEL = "gemini-2.5-flash";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+// العنوان الجديد للـ Endpoint
+const API_URL = "http://10.2.15.9:8000/chatbot";
 
 const DEFAULT_AGENT = {
-  name: "Ai Assistant",
+  name: "Local AI Assistant",
   description: "AI Text Assistant",
 };
 
@@ -84,7 +83,6 @@ export function ChatComp() {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const historyRef = useRef([]);
 
   const handleTextInputChange = useCallback((e) => {
     setTextInput(e.target.value);
@@ -100,35 +98,26 @@ export function ChatComp() {
     setIsLoading(true);
     setError(null);
 
-    const chatHistory = [
-      ...historyRef.current,
-      { role: "user", parts: [{ text }] },
-    ];
-
     try {
-      const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+      const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: chatHistory }),
+        // نقوم بإرسال الرسالة في الـ Body
+        body: JSON.stringify({ message: text }), 
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        const errDetail = data?.error?.message || "Unknown error";
-        setError(`API error: ${errDetail}`);
+        setError(`API error: ${res.statusText}`);
         return;
       }
 
-      const reply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || "(no response)";
+      // عدل المسار هنا (data.reply) حسب ما يرجعه الـ Backend الخاص بك
+      const reply = data?.reply || data?.response || "(no response)";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
 
-      historyRef.current = [
-        ...chatHistory,
-        { role: "model", parts: [{ text: reply }] },
-      ];
     } catch (e) {
       setError(`Network error: ${e.message}`);
     } finally {
