@@ -13,6 +13,7 @@ const extensions = [
   { label: ".vmem", value: "vmem" },
   { label: ".raw", value: "raw" },
   { label: ".img", value: "img" },
+  { label: ".dmp", value: "dmp" },
 ];
 
 export function ExtensionSelector() {

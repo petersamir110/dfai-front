@@ -13,7 +13,7 @@ export default function ForensicsForm({ setTitle }) {
   // States
   const [projectName, setProjectName] = useState("");
   const [path, setPath] = useState("");
-  const [extension, setExtension] = useState(".mem");
+  const [extension, setExtension] = useState("");
   const [loading, setLoading] = useState(false);
   const [percent, setPercent] = useState(0);
   const [taskCount, setTaskCount] = useState("0/0");
@@ -28,7 +28,7 @@ export default function ForensicsForm({ setTitle }) {
   // Cleanup on unmount
   useEffect(() => {
     const handleTabClose = () => {
-      fetch("/backend/project/delete", {
+      fetch("http://localhost:9000/project/delete", {
         method: "GET",
         keepalive: true,
       }).catch((err) => console.log("Unload cleanup failed:", err));
@@ -42,28 +42,31 @@ export default function ForensicsForm({ setTitle }) {
     };
   }, []);
 
+  // دالة الاتصال بـ WebSocket التحليل (Analysis)
   const startAnalysisProcess = () => {
     setStatusText("Starting Analysis...");
     setActiveStep(3);
 
-    // التحقق من أن السوكيت السابق مغلق قبل فتح الجديد
     if (analysisSocketRef.current) {
-        analysisSocketRef.current.close();
+      analysisSocketRef.current.close();
     }
 
-    analysisSocketRef.current = new WebSocket("ws://10.2.15.9:8000/ws/analysis");
+    // الـ Endpoint الجديدة للـ Analysis من الصورة
+    analysisSocketRef.current = new WebSocket("ws://localhost:7000/ws/analysis");
 
     analysisSocketRef.current.onopen = () => {
       setStatusText("Analysis Running...");
-      // إرسال البيانات فقط بعد التأكد من فتح الاتصال
+      // إرسال الرسالة المطلوبة بعد فتح الاتصال
       analysisSocketRef.current.send(JSON.stringify({ event: "analysis" }));
     };
 
     analysisSocketRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.event === "analysis_finished") {
-          setStatusText("Analysis Finished Successfully!");
+        
+        // التعامل مع الرسالة الراجعة من الـ Backend
+        if (data.event === "analysis_finished" || data.status === "success") {
+          setStatusText(data.message || "Analysis Finished Successfully!");
           setLoading(false);
         }
       } catch (err) {
@@ -93,15 +96,15 @@ export default function ForensicsForm({ setTitle }) {
     setActiveStep(1);
 
     try {
-      await fetch("/backend/project/delete", { method: "GET" });
+      await fetch("http://localhost:9000/project/delete", { method: "GET" });
     } catch (err) {
       console.log(err);
     }
 
     const finalPath = path.endsWith(extension) ? path : path + extension;
-
+    console.log(finalPath);
     try {
-      const response = await fetch("/backend/memory/path", {
+      const response = await fetch("http://localhost:9000/memory/path", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,8 +127,8 @@ export default function ForensicsForm({ setTitle }) {
 
       setStatusText("Connecting to live progress...");
       
-      // فتح سوكيت الـ Extraction
-      extractionSocketRef.current = new WebSocket("ws://10.2.15.8:8000/ws/progress");
+      // فتح سوكيت التقدم (Progress WebSocket)
+      extractionSocketRef.current = new WebSocket("ws://localhost:9000/ws/progress");
 
       extractionSocketRef.current.onopen = () => {
         setStatusText("Analyzing Memory Dump...");
@@ -145,7 +148,7 @@ export default function ForensicsForm({ setTitle }) {
               setStatusText("Extraction Completed!");
               if (extractionSocketRef.current) extractionSocketRef.current.close();
               
-              // بدء مرحلة التحليل فوراً
+              // بعد الانتهاء، بيتم قفل Extraction WebSocket وبدء الـ Analysis مباشرة
               startAnalysisProcess();
             }
           }
@@ -159,9 +162,7 @@ export default function ForensicsForm({ setTitle }) {
         }
       };
 
-      extractionSocketRef.current.onclose = () => {
-        // لا نقوم بإنهاء التحميل هنا لأن مرحلة الـ Analysis قد تكون مستمرة
-      };
+      extractionSocketRef.current.onclose = () => {};
 
       extractionSocketRef.current.onerror = () => {
         if (percentRef.current < 100) {

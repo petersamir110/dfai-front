@@ -27,8 +27,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// العنوان الجديد للـ Endpoint
-const API_URL = "http://10.2.15.9:8000/chatbot";
+
+const API_URL = "http://localhost:7000/chatbot";
 
 const DEFAULT_AGENT = {
   name: "Local AI Assistant",
@@ -102,8 +102,8 @@ export function ChatComp() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // نقوم بإرسال الرسالة في الـ Body
-        body: JSON.stringify({ message: text }), 
+        // 2. التعديل الثاني: تغيير المفتاح من message إلى question ليكون مثل الصورة
+        body: JSON.stringify({ question: text }), 
       });
 
       const data = await res.json();
@@ -113,8 +113,7 @@ export function ChatComp() {
         return;
       }
 
-      // عدل المسار هنا (data.reply) حسب ما يرجعه الـ Backend الخاص بك
-      const reply = data?.reply || data?.response || "(no response)";
+      const reply = data?.reply || data?.response || data?.answer || "(no response)";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
 
