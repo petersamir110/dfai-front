@@ -1,6 +1,5 @@
 "use client";
 import ForensicsForm from "@/components/forensicsForm";
-import { Steps } from "@/components/steps";
 import { Shield } from "lucide-react";
 import { useProject } from "@/context/ProjectContext";
 
