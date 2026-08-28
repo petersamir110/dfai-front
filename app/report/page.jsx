@@ -6,10 +6,8 @@ function ReportContent() {
   const searchParams = useSearchParams();
   const projectName = searchParams.get("project_name");
 
-  // إضافة timestamp لمنع الـ Caching ورابط الـ Endpoint الجديدة من الصورة
   const timestamp = new Date().getTime();
   
-  // بناء رابط التقرير مع إضافة اسم المشروع كـ Query Param إذا كان موجوداً
   const baseUrl = "http://localhost:7000/report";
   const reportUrl = projectName 
     ? `${baseUrl}?project_name=${encodeURIComponent(projectName)}&t=${timestamp}`
@@ -18,7 +16,6 @@ function ReportContent() {
   return (
     <div className="flex flex-col w-full h-[calc(100vh-60px)] bg-[#070b14] overflow-hidden">
       
-      {/* ستايل لغلق أي مسافات خارجية للمتصفح */}
       <style jsx global>{`
         html, body {
           margin: 0;
@@ -27,7 +24,6 @@ function ReportContent() {
         }
       `}</style>
 
-      {/* الهيدر */}
       <div className="w-full border-b border-slate-800/40 p-4 shrink-0 flex justify-between items-center">
         <h1 className="text-xl font-mono text-blue-500 font-bold tracking-widest uppercase">
           Forensic Analysis Report
@@ -39,7 +35,6 @@ function ReportContent() {
         )}
       </div>
 
-      {/* الـ Container الخاص بالـ iframe */}
       <div className="flex-1 w-full overflow-hidden">
         <iframe
           key={timestamp}
