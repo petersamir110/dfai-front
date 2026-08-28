@@ -102,7 +102,6 @@ export function ChatComp() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // 2. التعديل الثاني: تغيير المفتاح من message إلى question ليكون مثل الصورة
         body: JSON.stringify({ question: text }), 
       });
 
