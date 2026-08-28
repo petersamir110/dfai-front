@@ -10,7 +10,6 @@ import { CheckIcon } from "lucide-react";
 export default function ForensicsForm({ setTitle }) {
   const router = useRouter();
   
-  // States
   const [projectName, setProjectName] = useState("");
   const [path, setPath] = useState("");
   const [extension, setExtension] = useState("");
@@ -25,7 +24,6 @@ export default function ForensicsForm({ setTitle }) {
   const extractionSocketRef = useRef(null);
   const analysisSocketRef = useRef(null);
 
-  // Cleanup on unmount
   useEffect(() => {
     const handleTabClose = () => {
       fetch("http://localhost:9000/project/delete", {
@@ -42,7 +40,6 @@ export default function ForensicsForm({ setTitle }) {
     };
   }, []);
 
-  // دالة الاتصال بـ WebSocket التحليل (Analysis)
   const startAnalysisProcess = () => {
     setStatusText("Starting Analysis...");
     setActiveStep(3);
@@ -51,12 +48,10 @@ export default function ForensicsForm({ setTitle }) {
       analysisSocketRef.current.close();
     }
 
-    // الـ Endpoint الجديدة للـ Analysis من الصورة
     analysisSocketRef.current = new WebSocket("ws://localhost:7000/ws/analysis");
 
     analysisSocketRef.current.onopen = () => {
       setStatusText("Analysis Running...");
-      // إرسال الرسالة المطلوبة بعد فتح الاتصال
       analysisSocketRef.current.send(JSON.stringify({ event: "analysis" }));
     };
 
@@ -64,7 +59,6 @@ export default function ForensicsForm({ setTitle }) {
       try {
         const data = JSON.parse(event.data);
         
-        // التعامل مع الرسالة الراجعة من الـ Backend
         if (data.event === "analysis_finished" || data.status === "success") {
           setStatusText(data.message || "Analysis Finished Successfully!");
           setLoading(false);
@@ -127,7 +121,6 @@ export default function ForensicsForm({ setTitle }) {
 
       setStatusText("Connecting to live progress...");
       
-      // فتح سوكيت التقدم (Progress WebSocket)
       extractionSocketRef.current = new WebSocket("ws://localhost:9000/ws/progress");
 
       extractionSocketRef.current.onopen = () => {
@@ -148,7 +141,6 @@ export default function ForensicsForm({ setTitle }) {
               setStatusText("Extraction Completed!");
               if (extractionSocketRef.current) extractionSocketRef.current.close();
               
-              // بعد الانتهاء، بيتم قفل Extraction WebSocket وبدء الـ Analysis مباشرة
               startAnalysisProcess();
             }
           }
